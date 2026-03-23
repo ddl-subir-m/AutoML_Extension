@@ -269,3 +269,9 @@ USER root
 
 RUN pip install mlflow==3.2.0
 RUN pip install "dominodatalab[agents] @ git+https://github.com/dominodatalab/python-domino.git@release-2.0.0"
+
+# ============================================
+# Bake AutoML runner scripts into the image
+# ============================================
+COPY --chown=domino:domino automl-service/app/workers/domino_training_runner.py /app/domino_training_runner.py
+COPY --chown=domino:domino automl-service/app/workers/domino_eda_runner.py /app/domino_eda_runner.py

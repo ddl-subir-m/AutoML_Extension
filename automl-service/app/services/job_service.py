@@ -141,10 +141,10 @@ def validate_job_create_request(job_request: JobCreateRequest) -> None:
             detail="dataset_id is required when data_source is 'domino_dataset'",
         )
 
-    if job_request.data_source == "upload" and not job_request.file_path:
+    if job_request.data_source in ("upload", "domino_dataset") and not job_request.file_path:
         raise HTTPException(
             status_code=400,
-            detail="file_path is required when data_source is 'upload'",
+            detail="file_path is required when data_source is 'upload' or 'domino_dataset'",
         )
 
     if job_request.model_type == "timeseries":
@@ -327,13 +327,16 @@ async def create_job_with_context(
     if job.execution_target == "domino_job":
         from app.core.domino_job_launcher import get_domino_job_launcher
 
+        if not job.file_path:
+            raise ValueError(f"Job {job.id} has no file_path")
+
         settings = get_settings()
         launcher = get_domino_job_launcher()
         launch_result = await launcher.start_training_job(
             job_id=job.id,
+            file_path=job.file_path,
             title=job.name,
             hardware_tier_name=job_request.domino_hardware_tier_name or settings.domino_training_hardware_tier_name,
-            environment_id=job_request.domino_environment_id or settings.domino_training_environment_id,
             project_id=project_id,
         )
         if not launch_result.get("success"):

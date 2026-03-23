@@ -206,10 +206,7 @@ class JobQueueManager:
                             )
                     return
 
-                # Lazy import to avoid circular imports
-                from app.workers.training_worker import run_training_job
-
-                await run_training_job(job_id)
+                raise NotImplementedError("In-process training is not supported; use a Domino Job")
             finally:
                 self._semaphore.release()
 
